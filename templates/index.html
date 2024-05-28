@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html id="page">
+
+<head>
+    <title>Getting Started with Cirrus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
+    <link href="https://unpkg.com/cirrus-ui" type="text/css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/1359d7653f.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <style>
+        .upload-container input[type="file"] {
+            display: none;
+        }
+
+        .upload-container {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header header-fixed u-unselectable header-animated">
+        <div class="header-brand">
+            <div class="nav-item no-hover">
+                <a>
+                    <h6 class="title">Teachally</h6>
+                </a>
+            </div>
+        </div>
+        <div class="header-nav" id="header-menu">
+            <div class="nav-right">
+                <div class="nav-item text-center">
+                    Enhance Your Teaching Skills with Personalised Feedback
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="section">
+        <div class="hero fullscreen">
+            <div class="hero-body">
+                <div class="content">
+                    <ul class="breadcrumb breadcrumb--arrow breadcrumb--center">
+                        <li class="breadcrumb__item breadcrumb__item--active">
+                            <a href="#">Upload</a>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a href="#">Transcriptions</a>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a href="#">Analysis</a>
+                        </li>
+                    </ul>
+                    <div class="text-center">
+                        <h2 class="title text-lg">
+                            <span class="fa-stack fa-xs">
+                                <i class="fa-solid fa-circle fa-stack-2x"></i>
+                                <i class="fa-solid fa-1 fa-stack-1x fa-inverse"></i>
+                            </span>
+                            Upload a Live Teaching Recording
+                        </h2>
+                        <p class="subtitle text ml-5">
+                            For best results, upload a complete class session, from the
+                            initial greeting to the final goodbye, not exceeding 25 minutes.</p>
+                        <p class="subtitle ml-5">
+                            If your recording is longer, please trim the file to include essential segments such as
+                            greetings, warm-ups, student interactions, and farewells. Ensure the trimmed recording
+                            captures the flow and key moments of the class.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card h-100p u-flex u-items-center">
+                                <div class="content u-text-center p-3">
+                                    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data"
+                                        onsubmit="return validateForm()">
+                                        <label class="upload-container">
+                                            <span class="fa-stack fa-3x">
+                                                <i class="fa-solid fa-circle fa-stack-2x text-blue-100"></i>
+                                                <i class="fa-solid fa-upload fa-stack-1x text-blue-600"></i>
+                                            </span>
+                                            <input type="file" id="fileUpload" name="file" accept="video/*,audio/*" />
+                                            <p class="title mt-2 mb-0"><span class="text-blue-500">Click to
+                                                    select</span> or drag and drop your teaching video or audio file.
+                                            </p>
+                                            <p class="text-xs text-gray-600 text-left">Accepted Formats: MP4, AVI, MOV,
+                                                WMV, FLV, MKV (video); MP3, WAV, AAC, OGG, WMA (audio).<br> Duration
+                                                Limit: Files can be up to 25 minutes long.</p>
+                                        </label>
+                                        <div id="fileInfo" style="display: none;">
+                                            <p id="fileName"></p>
+                                            <p id="fileSize"></p>
+                                        </div>
+                                        <button type="submit" class="btn mt-2 btn-info">Upload</button>
+                                    </form>
+                                    <progress class="progress" id="uploadProgress" value="0" max="100"
+                                        style="width: 100%; display: none;"></progress>
+                                    <div id="progressText" style="display: none;">0%</div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card h-100p u-flex u-flex-column">
+                                <div class="content u-text-left p-3 pt-1">
+                                    <p class="title mt-2 mb-0">Playback</p>
+                                    <div class="media-stretch">
+                                        <video id="videoPreview" controls style="width: 100%; height: auto;"></video>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn mt-5 btn-info" id="nextButton">Next</div>
+
+                    {% if transcript %}
+                    <div class="mt-5">
+                        <h3>Transcription</h3>
+                        <pre>{{ transcript }}</pre>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <h6 class="footer__title text-white uppercase">Logo</h6>
+        <div class="content">
+            <div class="divider"></div>
+
+            <div class="row">
+                <div class="col-4">
+                    <ul class="no-bullets">
+                        <a href="!#">
+                            <li class="footer__list-item">Home</li>
+                        </a>
+                        <a href="!#">
+                            <li class="footer__list-item">Sign Up</li>
+                        </a>
+                        <a href="!#">
+                            <li class="footer__list-item">Downloads</li>
+                        </a>
+                        <ul>
+                        </ul>
+                    </ul>
+                </div>
+                <div class="col-4">
+                    <ul class="no-bullets">
+                        <a href="!#">
+                            <li class="footer__list-item">Company Information</li>
+                        </a>
+                        <a href="!#">
+                            <li class="footer__list-item">Contact Us</li>
+                        </a>
+                        <a href="!#">
+                            <li class="footer__list-item">Reviews</li>
+                        </a>
+                        <ul>
+                        </ul>
+                    </ul>
+                </div>
+                <div class="col-4">
+                    <ul class="no-bullets">
+                        <a href="!#">
+                            <li class="footer__list-item">FAQ</li>
+                        </a>
+                        <a href="!#">
+                            <li class="footer__list-item">Help Desk</li>
+                        </a>
+                        <a href="!#">
+                            <li class="footer__list-item">Forums</li>
+                        </a>
+                        <ul>
+                        </ul>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <p class="subtitle">Getahead Ltd &copy; 2024 by Vsy.</p>
+    </footer>
+    <script>
+        document.querySelectorAll('.upload-container').forEach(container => {
+            const inputElement = container.querySelector('input[type="file"]');
+            const uploadButton = document.querySelector('button[type="submit"]');
+            const fileNameDisplay = document.getElementById('fileName');
+            const fileSizeDisplay = document.getElementById('fileSize');
+            const fileInfo = document.getElementById('fileInfo');
+
+            // Disable the upload button initially
+            uploadButton.disabled = true;
+
+            container.addEventListener('click', function (event) {
+                inputElement.click();
+            });
+
+            inputElement.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const url = URL.createObjectURL(file);
+                    const videoPreview = document.getElementById('videoPreview');
+                    videoPreview.src = url;
+                    videoPreview.style.display = 'block';
+
+                    // Display file name and size
+                    fileNameDisplay.textContent = `File Name: ${file.name}`;
+                    fileSizeDisplay.textContent = `File Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+                    fileInfo.style.display = 'block';
+
+                    // Enable the upload button when a file is selected
+                    uploadButton.disabled = false;
+                }
+            });
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('fileUpload');
+            if (!fileInput.files.length) {
+                alert('Please select a file before uploading.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload', true);
+
+            xhr.upload.addEventListener('progress', function (event) {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    const progressBar = document.getElementById('uploadProgress');
+                    const progressText = document.getElementById('progressText');
+                    progressBar.value = percentComplete;
+                    progressText.textContent = Math.round(percentComplete) + '%';
+                    progressBar.style.display = 'block';
+                    progressText.style.display = 'block';
+                }
+            });
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // File uploaded successfully
+                    const response = JSON.parse(xhr.responseText);
+                    document.getElementById('progressText').textContent = 'Upload Complete!';
+                    // Handle the response as needed
+                    document.getElementById('uploadForm').reset();
+                    document.getElementById('uploadProgress').style.display = 'none';
+                    document.getElementById('progressText').style.display = 'none';
+                    document.getElementById('fileInfo').style.display = 'none';
+                    // Display transcript
+                    if (response.transcript) {
+                        const transcriptDiv = document.createElement('div');
+                        transcriptDiv.className = 'mt-5';
+                        const transcriptTitle = document.createElement('h3');
+                        transcriptTitle.textContent = 'Transcription';
+                        const transcriptPre = document.createElement('pre');
+                        transcriptPre.textContent = response.transcript;
+                        transcriptDiv.appendChild(transcriptTitle);
+                        transcriptDiv.appendChild(transcriptPre);
+                        document.querySelector('.content').appendChild(transcriptDiv);
+                    }
+                } else {
+                    alert('An error occurred during the upload. Please try again.');
+                }
+            };
+
+            xhr.onerror = function () {
+                alert('An error occurred during the upload. Please try again.');
+            };
+
+            xhr.send(formData);
+        });
+
+        document.getElementById('nextButton').addEventListener('click', function () {
+            document.getElementById('uploadForm').submit();
+        });
+
+        function validateForm() {
+            const fileInput = document.getElementById('fileUpload');
+            if (!fileInput.value) {
+                alert('Please select a file before uploading.');
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+
+</html>
