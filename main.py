@@ -3,6 +3,7 @@ import logging
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 from google.cloud import storage
+
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part, FinishReason
 import vertexai.preview.generative_models as generative_models
@@ -61,6 +62,11 @@ def upload_file():
             logger.error(f'Error generating transcript: {e}')
             return jsonify({'error': 'Error generating transcript'}), 500
     return jsonify({'error': 'Invalid file format'}), 400
+
+
+@app.route('/transcriptions')
+def transcriptions():
+    return render_template('transcriptions.html')
 
 
 def generate(gcs_uri):

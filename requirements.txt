@@ -23,6 +23,7 @@ grpc-google-iam-v1==0.13.0
 grpcio==1.64.0
 grpcio-status==1.62.2
 idna==3.7
+gunicorn
 itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
