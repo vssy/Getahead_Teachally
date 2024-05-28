@@ -2,7 +2,7 @@
 <html id="page">
 
 <head>
-    <title>Getting Started with Cirrus</title>
+    <title>Teachally - Enhance Your Teaching Skills with Personalised Feedback</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
@@ -96,7 +96,7 @@
                                             <p id="fileSize"></p>
                                         </div>
                                     </form>
-                                    <progress class="progress" id="uploadProgress" value="0" max="100"
+                                    <progress class="progress" id="uploadProgress" max="100"
                                         style="width: 100%; display: none;"></progress>
                                     <div id="progressText" style="display: none;">0%</div>
 
@@ -115,7 +115,7 @@
                         </div>
                     </div>
 
-                    <div class="btn mt-5 btn-info" id="nextButton">Next</div>
+                    <button class="btn-info mt-5 btn--disabled" id="nextButton" disabled>Next</button>
 
                     {% if transcript %}
                     <div class="mt-5">
@@ -128,70 +128,19 @@
         </div>
     </section>
     <footer class="footer">
-        <h6 class="footer__title text-white uppercase">Logo</h6>
+        <h6 class="footer__title text-white uppercase">Teachally</h6>
         <div class="content">
             <div class="divider"></div>
-
-            <div class="row">
-                <div class="col-4">
-                    <ul class="no-bullets">
-                        <a href="!#">
-                            <li class="footer__list-item">Home</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Sign Up</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Downloads</li>
-                        </a>
-                        <ul>
-                        </ul>
-                    </ul>
-                </div>
-                <div class="col-4">
-                    <ul class="no-bullets">
-                        <a href="!#">
-                            <li class="footer__list-item">Company Information</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Contact Us</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Reviews</li>
-                        </a>
-                        <ul>
-                        </ul>
-                    </ul>
-                </div>
-                <div class="col-4">
-                    <ul class="no-bullets">
-                        <a href="!#">
-                            <li class="footer__list-item">FAQ</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Help Desk</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Forums</li>
-                        </a>
-                        <ul>
-                        </ul>
-                    </ul>
-                </div>
-            </div>
         </div>
         <p class="subtitle">Getahead Ltd &copy; 2024 by Vsy.</p>
     </footer>
     <script>
         document.querySelectorAll('.upload-container').forEach(container => {
             const inputElement = container.querySelector('input[type="file"]');
-            const uploadButton = document.querySelector('button[type="submit"]');
+            const nextButton = document.getElementById('nextButton');
             const fileNameDisplay = document.getElementById('fileName');
             const fileSizeDisplay = document.getElementById('fileSize');
             const fileInfo = document.getElementById('fileInfo');
-
-            // Disable the upload button initially
-            uploadButton.disabled = true;
 
             container.addEventListener('click', function (event) {
                 inputElement.click();
@@ -210,18 +159,21 @@
                     fileSizeDisplay.textContent = `File Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`;
                     fileInfo.style.display = 'block';
 
-                    // Enable the upload button when a file is selected
-                    uploadButton.disabled = false;
+                    // Enable the next button when a file is selected
+                    nextButton.disabled = false;
+                    nextButton.classList.remove('btn--disabled');
                 }
             });
         });
 
         document.getElementById('nextButton').addEventListener('click', function (event) {
             event.preventDefault();
+            this.classList.add('animated', 'loading', 'loading-right', 'btn--disabled');
 
             const fileInput = document.getElementById('fileUpload');
             if (!fileInput.files.length) {
                 alert('Please select a file before uploading.');
+                this.classList.remove('loading');
                 return;
             }
 
@@ -249,28 +201,27 @@
                     // File uploaded successfully
                     const response = JSON.parse(xhr.responseText);
                     document.getElementById('progressText').textContent = 'Upload Complete!';
-                    // Handle the response as needed
                     document.getElementById('uploadForm').reset();
                     document.getElementById('uploadProgress').style.display = 'none';
                     document.getElementById('progressText').style.display = 'none';
-                    document.getElementById('fileInfo').style.display = 'none';
-
-                    // Redirect to the new page
-                    window.location.href = "/transcriptions"; // Change this to the new page URL
-                } else {
-                    alert('An error occurred during the upload. Please try again.');
                 }
             };
 
             xhr.onerror = function () {
                 alert('An error occurred during the upload. Please try again.');
+                nextButton.classList.remove('loading');
+            };
+
+            xhr.onloadend = function () {
+                nextButton.classList.remove('loading');
+                if (xhr.status === 200) {
+                    window.location.href = "/transcriptions";
+                } else {
+                    alert('An error occurred during the upload. Please try again.');
+                }
             };
 
             xhr.send(formData);
-        });
-
-        document.getElementById('nextButton').addEventListener('click', function () {
-            document.getElementById('uploadForm').submit();
         });
 
         function validateForm() {

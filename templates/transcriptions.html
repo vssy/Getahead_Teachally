@@ -2,7 +2,7 @@
 <html id="page">
 
 <head>
-    <title>Transcriptions - Teachally</title>
+    <title>Teachally - Transcriptions</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
@@ -35,73 +35,34 @@
         <div class="hero fullscreen">
             <div class="hero-body">
                 <div class="content">
-                    <div class="text-center">
-                        <h2 class="title text-lg">Transcriptions</h2>
-                        <p class="subtitle text ml-5">Your transcription will appear here once the upload is complete.
-                        </p>
-                    </div>
-                    <div id="transcriptionContent" class="mt-5">
-                        <!-- Transcription content will be dynamically inserted here -->
+                    <h2 class="title text-lg">Transcriptions</h2>
+                    <div class="mt-5">
+                        <h3>Transcription</h3>
+                        <pre id="transcriptionContent"></pre>
                     </div>
                 </div>
             </div>
         </div>
     </section>
     <footer class="footer">
-        <h6 class="footer__title text-white uppercase">Logo</h6>
+        <h6 class="footer__title text-white uppercase">Teachally</h6>
         <div class="content">
             <div class="divider"></div>
-
-            <div class="row">
-                <div class="col-4">
-                    <ul class="no-bullets">
-                        <a href="!#">
-                            <li class="footer__list-item">Home</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Sign Up</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Downloads</li>
-                        </a>
-                        <ul>
-                        </ul>
-                    </ul>
-                </div>
-                <div class="col-4">
-                    <ul class="no-bullets">
-                        <a href="!#">
-                            <li class="footer__list-item">Company Information</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Contact Us</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Reviews</li>
-                        </a>
-                        <ul>
-                        </ul>
-                    </ul>
-                </div>
-                <div class="col-4">
-                    <ul class="no-bullets">
-                        <a href="!#">
-                            <li class="footer__list-item">FAQ</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Help Desk</li>
-                        </a>
-                        <a href="!#">
-                            <li class="footer__list-item">Forums</li>
-                        </a>
-                        <ul>
-                        </ul>
-                    </ul>
-                </div>
-            </div>
         </div>
         <p class="subtitle">Getahead Ltd &copy; 2024 by Vsy.</p>
     </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/api/get_transcription')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('transcriptionContent').textContent = data.transcript;
+                })
+                .catch(error => {
+                    console.error('Error fetching transcription:', error);
+                });
+        });
+    </script>
 </body>
 
 </html>

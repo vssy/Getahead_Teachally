@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from google.cloud import storage
 
@@ -67,6 +67,15 @@ def upload_file():
 @app.route('/transcriptions')
 def transcriptions():
     return render_template('transcriptions.html')
+
+
+# Additional API endpoint to serve transcription data
+
+@app.route('/api/get_transcription', methods=['GET'])
+def get_transcription():
+    # Mock response for now
+    transcript = "Sample transcription text."
+    return jsonify({'transcript': transcript})
 
 
 def generate(gcs_uri):
