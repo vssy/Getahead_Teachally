@@ -57,6 +57,9 @@ def upload_file():
         try:
             gcs_uri = upload_to_gcs(file_path, filename)
             transcript = generate(gcs_uri)
+            # Save transcript to a file
+            with open('transcript.txt', 'w') as f:
+                f.write(transcript)
             return jsonify({'transcript': transcript})
         except Exception as e:
             logger.error(f'Error generating transcript: {e}')
@@ -73,9 +76,13 @@ def transcriptions():
 
 @app.route('/api/get_transcription', methods=['GET'])
 def get_transcription():
-    # Mock response for now
-    transcript = "Sample transcription text."
-    return jsonify({'transcript': transcript})
+    try:
+        with open('transcript.txt', 'r') as f:
+            transcript = f.read()
+        return jsonify({'transcript': transcript})
+    except Exception as e:
+        logger.error(f'Error reading transcription file: {e}')
+        return jsonify({'error': 'Error reading transcription file'}), 500
 
 
 def generate(gcs_uri):

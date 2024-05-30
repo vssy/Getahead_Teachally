@@ -27,7 +27,7 @@
     <div class="header header-fixed u-unselectable header-animated">
         <div class="header-brand">
             <div class="nav-item no-hover">
-                <a>
+                <a href="{{ url_for('home') }}">
                     <h6 class="title">Teachally</h6>
                 </a>
             </div>
@@ -142,11 +142,19 @@
             const fileSizeDisplay = document.getElementById('fileSize');
             const fileInfo = document.getElementById('fileInfo');
 
-            container.addEventListener('click', function (event) {
+            let wasExecuted = false;
+
+            inputElement.addEventListener('click', function (event) {
+                if (wasExecuted) {
+                    return;
+                }
+
+                wasExecuted = true; // Set the flag
                 inputElement.click();
             });
 
             inputElement.addEventListener('change', function (event) {
+                wasExecuted = false;  // Reset the flag after file selection
                 const file = event.target.files[0];
                 if (file) {
                     const url = URL.createObjectURL(file);
