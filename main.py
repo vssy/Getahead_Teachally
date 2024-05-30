@@ -1,12 +1,14 @@
+from google.cloud import storage
+from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, jsonify
+import vertexai.preview.generative_models as generative_models
+from vertexai.generative_models import GenerativeModel, Part, FinishReason
+import vertexai
 import os
 import logging
-from flask import Flask, render_template, request, jsonify
-from werkzeug.utils import secure_filename
-from google.cloud import storage
+from dotenv import load_dotenv
+load_dotenv()
 
-import vertexai
-from vertexai.generative_models import GenerativeModel, Part, FinishReason
-import vertexai.preview.generative_models as generative_models
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -17,6 +19,22 @@ app.config['GCS_BUCKET'] = 'sample_joe_recordings'
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def setup_google_credentials():
+    credentials_content = os.environ.get(
+        'GOOGLE_APPLICATION_CREDENTIALS_CONTENT')
+    if credentials_content:
+        credentials_path = '/tmp/google_credentials.json'
+        with open(credentials_path, 'w') as f:
+            f.write(credentials_content)
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+    elif 'GOOGLE_APPLICATION_CREDENTIALS' not in os.environ:
+        logger.error(
+            'Google application credentials not found in environment variables.')
+
+
+setup_google_credentials()
 
 
 def allowed_file(filename):
