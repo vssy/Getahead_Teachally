@@ -7,6 +7,7 @@ import vertexai
 import os
 import logging
 from dotenv import load_dotenv
+import json
 load_dotenv()
 
 
@@ -22,16 +23,25 @@ logger = logging.getLogger(__name__)
 
 
 def setup_google_credentials():
-    credentials_content = os.environ.get(
-        'GOOGLE_APPLICATION_CREDENTIALS_CONTENT')
-    if credentials_content:
-        credentials_path = '/tmp/google_credentials.json'
-        with open(credentials_path, 'w') as f:
-            f.write(credentials_content)
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-    elif 'GOOGLE_APPLICATION_CREDENTIALS' not in os.environ:
-        logger.error(
-            'Google application credentials not found in environment variables.')
+    environment = os.environ.get('ENVIRONMENT')
+    if environment == 'production':
+        credentials_content = os.environ.get(
+            'GOOGLE_APPLICATION_CREDENTIALS_CONTENT')
+        if credentials_content:
+            credentials_dict = json.loads(credentials_content)
+            with open('/tmp/gcp-credentials.json', 'w') as f:
+                json.dump(credentials_dict, f)
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/tmp/gcp-credentials.json'
+        else:
+            logger.error(
+                'Google application credentials content not found in environment variables.')
+    else:
+        credentials_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        if credentials_path and os.path.exists(credentials_path):
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+        else:
+            logger.error(
+                'Google application credentials not found in environment variables.')
 
 
 setup_google_credentials()
