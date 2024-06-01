@@ -1,3 +1,4 @@
+import uuid
 from google.cloud import storage
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, jsonify
@@ -8,13 +9,15 @@ import os
 import logging
 from dotenv import load_dotenv
 import json
+import marko
+import mimetypes
+
 load_dotenv()
 
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['ALLOWED_EXTENSIONS'] = {
-    'wav', 'mp3', 'mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'aac', 'ogg', 'wma'}
+app.config['ALLOWED_EXTENSIONS'] = {'aac', 'mp3', 'wav', 'wma', 'ogg'}
 app.config['GCS_BUCKET'] = 'sample_joe_recordings'
 
 # Set up logging
@@ -56,7 +59,8 @@ def upload_to_gcs(file_path, filename):
     bucket = client.bucket(app.config['GCS_BUCKET'])
     blob = bucket.blob(filename)
     blob.upload_from_filename(file_path)
-    return f'gs://{app.config["GCS_BUCKET"]}/{filename}'
+    mime_type, _ = mimetypes.guess_type(filename)
+    return f'gs://{app.config["GCS_BUCKET"]}/{filename}', mime_type
 
 
 @app.route('/')
@@ -71,28 +75,29 @@ def health_check():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        logger.error('No file part in the request')
-        return jsonify({'error': 'No file part in the request'}), 400
-    file = request.files['file']
-    if file.filename == '':
-        logger.error('No selected file')
-        return jsonify({'error': 'No selected file'}), 400
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        try:
-            gcs_uri = upload_to_gcs(file_path, filename)
-            transcript = generate(gcs_uri)
-            # Save transcript to a file
-            with open('transcript.txt', 'w') as f:
-                f.write(transcript)
-            return jsonify({'transcript': transcript})
-        except Exception as e:
-            logger.error(f'Error generating transcript: {e}')
-            return jsonify({'error': 'Error generating transcript'}), 500
-    return jsonify({'error': 'Invalid file format'}), 400
+    try:
+        if 'file' not in request.files:
+            logger.error('No file part in the request')
+            return jsonify({'error': 'No file part in the request'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            logger.error('No selected file')
+            return jsonify({'error': 'No selected file'}), 400
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            try:
+                gcs_uri, mime_type = upload_to_gcs(file_path, filename)
+                transcript_id = generate(gcs_uri, mime_type)
+                return jsonify({'transcript_id': transcript_id})
+            except Exception as e:
+                logger.error(f'Error generating transcript: {e}')
+                return jsonify({'error': 'Error generating transcript', 'details': str(e)}), 500
+        return jsonify({'error': 'Invalid file format'}), 400
+    except Exception as e:
+        logger.error(f'Unexpected error: {e}')
+        return jsonify({'error': 'Unexpected error', 'details': str(e)}), 500
 
 
 @app.route('/transcriptions')
@@ -104,26 +109,47 @@ def transcriptions():
 
 @app.route('/api/get_transcription', methods=['GET'])
 def get_transcription():
+    transcript_id = request.args.get('transcript_id')
+    if not transcript_id:
+        logger.error('No transcript ID provided')
+        return jsonify({'error': 'No transcript ID provided'}), 400
+
     try:
-        with open('transcript.txt', 'r') as f:
+        transcript_filename = f'transcripts/{transcript_id}.txt'
+        if not os.path.exists(transcript_filename):
+            logger.error(
+                f'Transcription file not found: {transcript_filename}')
+            return jsonify({'error': 'Transcription file not found'}), 404
+        with open(transcript_filename, 'r') as f:
             transcript = f.read()
-        return jsonify({'transcript': transcript})
+
+        # Parse markdown to HTML using marko
+        transcript_html = marko.convert(transcript)
+
+        return jsonify({'transcript': transcript_html})
     except Exception as e:
         logger.error(f'Error reading transcription file: {e}')
         return jsonify({'error': 'Error reading transcription file'}), 500
 
 
-def generate(gcs_uri):
+def generate(gcs_uri, mime_type):
     vertexai.init(project="wordscape-399515", location="us-central1")
     model = GenerativeModel(
-        "gemini-1.5-pro-001",
-        system_instruction=["You are an interaction analysis AI. Based on the following transcript of a classroom session, identify and categorize the interactions between the teacher and students. Label each segment of the dialogue as 'Teacher' or 'Student'. Highlight key moments such as questions, answers, and any significant pauses or interruptions. Summarize the types of interactions and provide a count of each type. Transcribe and identify the speakers between the teacher and the student, keep grammar mistakes if any."]
+        "gemini-1.5-flash-001",
+        system_instruction=[
+            "You are an accurate analysis AI, designed to enhance teaching quality."]
     )
 
-    audio_part = generative_models.Part.from_uri(
-        gcs_uri, mime_type="audio/wav")
+    audio_part = generative_models.Part.from_uri(gcs_uri, mime_type=mime_type)
 
-    text1 = """You are an interaction analysis AI. Based on the following transcript of a classroom session, identify and categorize the interactions between the teacher and students. Label each segment of the dialogue as 'Teacher' or 'Student'. Highlight key moments such as questions, answers, and any significant pauses or interruptions. Summarize the types of interactions and provide a count of each type. Transcribe and identify the speakers between the teacher and the student, keep grammar mistakes if any."""
+    text1 = """Transcribe and identify the speakers between the teacher and the student. Keep every grammatical mistake as it is. You should accurately transcribe so that we can analyse their performance later on. Label each segment of the dialogue as 'Teacher' or 'Student'.
+    
+    format example:
+    <p>Teacher: Yeah, but first, how are you today? </p>
+    <p>Student: Great! Super busy! </p>
+
+    """
+    text2 = """You are an interaction analysis AI. Based on the following transcript of a classroom session, identify and categorize the interactions between the teacher and students. Label each segment of the dialogue as 'Teacher' or 'Student'. Highlight key moments such as questions, answers, and any significant pauses or interruptions. Summarize the types of interactions and provide a count of each type. Transcribe and identify the speakers between the teacher and the student, keep grammar mistakes if any."""
 
     generation_config = {
         "max_output_tokens": 8192,
@@ -146,10 +172,21 @@ def generate(gcs_uri):
     )
 
     transcript = "".join(response.text for response in responses)
-    return transcript
+    transcript_id = str(uuid.uuid4())  # Generate a unique ID
+    transcript_filename = f'transcripts/{transcript_id}.txt'
+
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(transcript_filename), exist_ok=True)
+
+    with open(transcript_filename, 'w') as f:
+        f.write(transcript)
+    logger.info(f'Transcription file saved: {transcript_filename}')
+    return transcript_id
 
 
 if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
+    if not os.path.exists('transcripts'):
+        os.makedirs('transcripts')
     app.run(debug=True)

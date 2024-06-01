@@ -40,11 +40,11 @@
             </div>
         </div>
     </div>
-    <section class="section">
+    <section class="section ">
         <div class="hero fullscreen">
             <div class="hero-body">
                 <div class="content">
-                    <ul class="breadcrumb breadcrumb--arrow breadcrumb--center">
+                    <ul class="breadcrumb breadcrumb--arrow breadcrumb--center mt-10">
                         <li class="breadcrumb__item breadcrumb__item--active">
                             <a href="#">Upload</a>
                         </li>
@@ -83,15 +83,18 @@
                                                 <i class="fa-solid fa-circle fa-stack-2x text-blue-100"></i>
                                                 <i class="fa-solid fa-upload fa-stack-1x text-blue-600"></i>
                                             </span>
-                                            <input type="file" id="fileUpload" name="file" accept="video/*,audio/*" />
+                                            <input type="file" id="fileUpload" name="file"
+                                                accept=".aac, .mp3, .wav, .wma, .ogg" />
+
                                             <p class="title mt-2 mb-0"><span class="text-blue-500">Click to
-                                                    select</span> or drag and drop your teaching video or audio file.
+                                                    select</span> your teaching audio file.
                                             </p>
-                                            <p class="text-xs text-gray-600 text-left">Accepted Formats: MP4, AVI, MOV,
-                                                WMV, FLV, MKV (video); MP3, WAV, AAC, OGG, WMA (audio).<br> Duration
-                                                Limit: Files can be up to 25 minutes long.</p>
+                                            <p class="text-xs text-gray-600 text-left">Accepted Formats: WAV
+                                                (audio).<br> Duration
+                                                Limit: Files can be up to 25 minutes long. Files will be deleted after
+                                                24 hours.</p>
                                         </label>
-                                        <div id="fileInfo" style="display: none;">
+                                        <div id="fileInfo">
                                             <p id="fileName"></p>
                                             <p id="fileSize"></p>
                                         </div>
@@ -99,7 +102,6 @@
                                     <progress class="progress" id="uploadProgress" max="100"
                                         style="width: 100%; display: none;"></progress>
                                     <div id="progressText" style="display: none;">0%</div>
-
                                 </div>
                             </div>
                         </div>
@@ -108,31 +110,33 @@
                                 <div class="content u-text-left p-3 pt-1">
                                     <p class="title mt-2 mb-0">Playback</p>
                                     <div class="media-stretch">
-                                        <video id="videoPreview" controls style="width: 100%; height: auto;"></video>
+                                        <audio id="audioPreview" controls
+                                            style="width: 100%; height: auto; display: none;">
+                                            <p>Your browser does not support the audio element.</p>
+                                        </audio>
+
+                                    </div>
+                                    <div id="debugInfo" style="display: none;">
+                                        <p id="debugMessage"></p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="u-center"><button class="btn-info mt-5 btn--disabled" id="nextButton" disabled>Next
+                            Step</button></div>
 
-                    <button class="btn-info mt-5 btn--disabled" id="nextButton" disabled>Next</button>
-
-                    {% if transcript %}
-                    <div class="mt-5">
-                        <h3>Transcription</h3>
-                        <pre>{{ transcript }}</pre>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </section>
-    <footer class="footer">
-        <h6 class="footer__title text-white uppercase">Teachally</h6>
+    <footer class="footer bg-gray-100">
+        <h6 class="footer__title uppercase">Teachally</h6>
         <div class="content">
             <div class="divider"></div>
         </div>
-        <p class="subtitle">Getahead Ltd &copy; 2024 by Vsy.</p>
+        <p class="subtitle"><a href="https://getahead.ltd" target="_blank">Getahead Ltd.</a> &copy; 2024 by <a
+                href="https://lang.ansr.dev" target="_blank">Vsy</a>
     </footer>
     <script>
         document.querySelectorAll('.upload-container').forEach(container => {
@@ -141,26 +145,46 @@
             const fileNameDisplay = document.getElementById('fileName');
             const fileSizeDisplay = document.getElementById('fileSize');
             const fileInfo = document.getElementById('fileInfo');
+            const audioPreview = document.getElementById('audioPreview');
+            const debugInfo = document.getElementById('debugInfo');
+            const debugMessage = document.getElementById('debugMessage');
 
-            let wasExecuted = false;
-
-            inputElement.addEventListener('click', function (event) {
-                if (wasExecuted) {
-                    return;
-                }
-
-                wasExecuted = true; // Set the flag
-                inputElement.click();
-            });
+            let currentBlobUrl = null; // Store the current Blob URL
 
             inputElement.addEventListener('change', function (event) {
-                wasExecuted = false;  // Reset the flag after file selection
                 const file = event.target.files[0];
+
+                // Revoke the previous Blob URL if it exists
+                if (currentBlobUrl) {
+                    URL.revokeObjectURL(currentBlobUrl);
+                    currentBlobUrl = null;
+                }
+
                 if (file) {
                     const url = URL.createObjectURL(file);
-                    const videoPreview = document.getElementById('videoPreview');
-                    videoPreview.src = url;
-                    videoPreview.style.display = 'block';
+                    currentBlobUrl = url; // Store the new Blob URL
+
+                    if (file.type.startsWith('audio')) {
+                        audioPreview.src = url;
+                        audioPreview.style.display = 'block';
+                        audioPreview.load();
+
+                        // Add event listeners for debugging
+                        audioPreview.addEventListener('error', function () {
+                            debugMessage.textContent = 'Error occurred while playing the audio.';
+                            debugInfo.style.display = 'block';
+                        });
+
+                        audioPreview.addEventListener('canplaythrough', function () {
+                            debugMessage.textContent = 'Audio can be played through without interruption.';
+                            debugInfo.style.display = 'block';
+                        });
+
+                        audioPreview.addEventListener('stalled', function () {
+                            debugMessage.textContent = 'Audio playback has stalled.';
+                            debugInfo.style.display = 'block';
+                        });
+                    }
 
                     // Display file name and size
                     fileNameDisplay.textContent = `File Name: ${file.name}`;
@@ -170,9 +194,35 @@
                     // Enable the next button when a file is selected
                     nextButton.disabled = false;
                     nextButton.classList.remove('btn--disabled');
+                } else {
+                    // Reset the audio preview if no file is selected
+                    audioPreview.src = '';
+                    audioPreview.style.display = 'none';
+                    fileInfo.style.display = 'none';
+                    nextButton.disabled = true;
+                    nextButton.classList.add('btn--disabled');
                 }
             });
         });
+
+        function PreviewAudio(inputFile, previewElement) {
+            if (inputFile.files && inputFile.files[0]) {
+                const file = inputFile.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewElement.src = e.target.result;
+                    previewElement.style.display = 'block';
+                    previewElement.load(); // Ensure the audio is reloaded
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewElement.src = '';
+                previewElement.style.display = 'none';
+                alert("File Not Selected");
+            }
+        }
+
+
 
         document.getElementById('nextButton').addEventListener('click', function (event) {
             event.preventDefault();
@@ -208,10 +258,16 @@
                 if (xhr.status === 200) {
                     // File uploaded successfully
                     const response = JSON.parse(xhr.responseText);
+                    const transcriptId = response.transcript_id;  // Store the transcript ID
                     document.getElementById('progressText').textContent = 'Upload Complete!';
                     document.getElementById('uploadForm').reset();
                     document.getElementById('uploadProgress').style.display = 'none';
                     document.getElementById('progressText').style.display = 'none';
+
+                    // Redirect to the transcriptions page with the transcriptId
+                    window.location.href = `/transcriptions?transcript_id=${transcriptId}`;
+                } else {
+                    alert('An error occurred during the upload. Please try again.');
                 }
             };
 
@@ -222,11 +278,6 @@
 
             xhr.onloadend = function () {
                 nextButton.classList.remove('loading');
-                if (xhr.status === 200) {
-                    window.location.href = "/transcriptions";
-                } else {
-                    alert('An error occurred during the upload. Please try again.');
-                }
             };
 
             xhr.send(formData);
@@ -240,6 +291,7 @@
             }
             return true;
         }
+
     </script>
 </body>
 

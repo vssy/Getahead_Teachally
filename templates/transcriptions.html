@@ -2,7 +2,7 @@
 <html id="page">
 
 <head>
-    <title>Teachally - Transcriptions</title>
+    <title>Teachally - Enhance Your Teaching Skills with Personalised Feedback</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
@@ -12,6 +12,7 @@
     <script src="https://kit.fontawesome.com/1359d7653f.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"
         integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
 </head>
 
 <body>
@@ -35,11 +36,40 @@
         <div class="hero fullscreen">
             <div class="hero-body">
                 <div class="content">
-                    <h2 class="title text-lg">Transcriptions</h2>
-                    <div class="mt-5">
-                        <h3>Transcription</h3>
-                        <pre id="transcriptionContent"></pre>
+                    <ul class="breadcrumb breadcrumb--arrow breadcrumb--center">
+                        <li class="breadcrumb__item">
+                            <a href="#">Upload</a>
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--active">
+                            <a href="#">Transcriptions</a>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a href="#">Analysis</a>
+                        </li>
+                    </ul>
+                    <div class="text-center">
+                        <h2 class="title text-lg">
+                            <span class="fa-stack fa-xs">
+                                <i class="fa-solid fa-circle fa-stack-2x"></i>
+                                <i class="fa-solid fa-2 fa-stack-1x fa-inverse"></i>
+                            </span>
+                            Transcription Display
+                        </h2>
                     </div>
+
+                    <div class="frame" style="height:40rem">
+                        <div class="frame__body">
+                            <div class="u-flex u-overflow-auto u-text-break">
+                                <div class="content u-text-left p-3">
+                                    <div id="transcriptionContent" class="leading-normal u-text-break"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="u-center"><button class="btn-info mt-5 btn--disabled" id="nextButton" disabled>Next
+                            Step</button></div>
                 </div>
             </div>
         </div>
@@ -49,20 +79,50 @@
         <div class="content">
             <div class="divider"></div>
         </div>
-        <p class="subtitle">Getahead Ltd &copy; 2024 by Vsy.</p>
+        <p class="subtitle"><a href="https://getahead.ltd" target="_blank">Getahead Ltd.</a> &copy; 2024 by <a
+                href="https://lang.ansr.dev" target="_blank">Vsy</a>
     </footer>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            fetch('/api/get_transcription')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('transcriptionContent').textContent = data.transcript;
-                })
-                .catch(error => {
-                    console.error('Error fetching transcription:', error);
-                });
+            const urlParams = new URLSearchParams(window.location.search);
+            const transcriptId = urlParams.get('transcript_id');
+
+            if (transcriptId) {
+                fetch(`/api/get_transcription?transcript_id=${transcriptId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.transcript) {
+                            document.getElementById('transcriptionContent').innerHTML = data.transcript;
+                            styleTranscription();
+                        } else {
+                            document.getElementById('transcriptionContent').textContent = 'Error: ' + data.error;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching transcription:', error);
+                        document.getElementById('transcriptionContent').textContent = 'Error fetching transcription.';
+                    });
+            } else {
+                document.getElementById('transcriptionContent').textContent = 'No transcript ID provided.';
+            }
         });
+
+        function styleTranscription() {
+            const paragraphs = document.querySelectorAll('#transcriptionContent p');
+            paragraphs.forEach(element => {
+                const text = element.textContent || element.innerText;
+                if (text.includes('Teacher:') || text.includes('Teacher (')) {
+                    element.classList.add('text-blue-700');
+                    element.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-user-secret"></i> ');
+                } else if (text.includes('Student:') || text.includes('Student (')) {
+                    element.classList.add('text-green-700');
+                    element.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-user-astronaut"></i> ');
+                }
+            });
+        }
+
     </script>
+
 </body>
 
 </html>
