@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
+
     <link href="https://unpkg.com/cirrus-ui" type="text/css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" />
@@ -74,8 +76,8 @@
 
                     <div class="row">
                         <div class="col-6">
-                            <div class="card h-100p u-flex u-items-center">
-                                <div class="content u-text-center p-3">
+                            <div class="card u-flex u-items-center">
+                                <div class="content u-text-center pt-8 p-3">
                                     <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data"
                                         onsubmit="return validateForm()">
                                         <label class="upload-container">
@@ -106,16 +108,15 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="card h-100p u-flex u-flex-column">
-                                <div class="content u-text-left p-3 pt-1">
-                                    <p class="title mt-2 mb-0">Playback</p>
-                                    <div class="media-stretch">
-                                        <audio id="audioPreview" controls
-                                            style="width: 100%; height: auto; display: none;">
-                                            <p>Your browser does not support the audio element.</p>
-                                        </audio>
+                            <div class="card u-flex u-flex-column">
+                                <div class="content u-text-left p-3">
+                                    <p class="title mt-2 mb-0">Preview</p>
 
-                                    </div>
+                                    <audio id="audioPreview" controls style="width: 100%; height:50px;" class="mt-8">
+                                        <p>Your browser does not support the audio element.</p>
+                                    </audio>
+
+
                                     <div id="debugInfo" style="display: none;">
                                         <p id="debugMessage"></p>
                                     </div>
@@ -176,7 +177,7 @@
                         });
 
                         audioPreview.addEventListener('canplaythrough', function () {
-                            debugMessage.textContent = 'Audio can be played through without interruption.';
+                            debugMessage.textContent = '';
                             debugInfo.style.display = 'block';
                         });
 
