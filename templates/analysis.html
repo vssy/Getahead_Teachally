@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html id="page">
+
+<head>
+    <title>Teachally - Interaction Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
+    <link href="https://unpkg.com/cirrus-ui" type="text/css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/1359d7653f.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="header header-fixed u-unselectable header-animated">
+        <div class="header-brand">
+            <div class="nav-item no-hover">
+                <a href="{{ url_for('home') }}">
+                    <h6 class="title">Teachally</h6>
+                </a>
+            </div>
+        </div>
+        <div class="header-nav" id="header-menu">
+            <div class="nav-right">
+                <div class="nav-item text-center">
+                    Enhance Your Teaching Skills with Personalised Feedback
+                </div>
+            </div>
+        </div>
+    </div>
+    <section class="section">
+        <div class="hero ">
+            <div class="hero-body">
+                <div class="content">
+                    <ul class="breadcrumb breadcrumb--arrow breadcrumb--center mt-10">
+                        <li class="breadcrumb__item">
+                            <a href="#">Upload</a>
+                        </li>
+                        <li class="breadcrumb__item">
+                            <a href="#">Transcriptions</a>
+                        </li>
+                        <li class="breadcrumb__item breadcrumb__item--active">
+                            <a href="#">Analysis</a>
+                        </li>
+                    </ul>
+                    <div class="text-center">
+                        <h2 class="title text-lg">
+                            <span class="fa-stack fa-xs">
+                                <i class="fa-solid fa-circle fa-stack-2x"></i>
+                                <i class="fa-solid fa-3 fa-stack-1x fa-inverse"></i>
+                            </span>
+                            Interaction Analysis
+                        </h2>
+                    </div>
+
+                    <div id="loadingSpinner" class="u-center" style="display: none;">
+                        <div class="animated loading hide-text"></div>
+                    </div>
+
+                    <div id="analysisContent" class="u-text-left p-3">
+                        <!-- Analysis cards will be inserted here -->
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Efficient Greetings</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Efficient-Greetings">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Encourage brevity in teacher greetings to allow more student participation.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Language Immersion</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Language-Immersion">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Monitor the balance of English vs. native language usage, emphasizing English
+                                        for students capable of full conversations.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Thinking Time</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Thinking-Time">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Ensure students are given adequate time to formulate responses without immediate
+                                        teacher intervention.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Opportunities for Self-Correction</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Opportunities-for-Self-Correction">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Allow students to identify and correct their own errors as a first step.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Balance of Opinions</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Balance-of-Opinions">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Evaluate the extent of the teacher’s opinions during discussions, ensuring
+                                        students’ ideas are predominant.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Direct Error Correction</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Direct-Error-Correction">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Assess how the teacher addresses errors, focusing on direct correction rather
+                                        than rephrasing student responses.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Positive Reinforcement</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Positive-Reinforcement">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Measure the frequency and sincerity of encouragement provided to students.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Constructive Corrections</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Constructive-Corrections">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Score the appropriateness and helpfulness of corrections given to students.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Enhancing Vocabulary</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Enhancing-Vocabulary">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Recognize instances where the teacher successfully introduces advanced
+                                        vocabulary following correct student responses.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card h-100p u-flex u-flex-column">
+                                    <div class="card__header">
+                                        <p class="font-bold px-3">Active Listening</p>
+                                    </div>
+                                    <div class="content p-3" id="content-Active-Listening">
+                                        <div class="loading-spinner" style="display: none;">
+                                            <div class="animated loading hide-text"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__action-bar text-xs bg-gray-000">
+                                        Gauge the teacher’s active listening by the relevance and depth of their
+                                        responses to student contributions.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <h6 class="footer__title text-white uppercase">Teachally</h6>
+        <div class="content">
+            <div class="divider"></div>
+        </div>
+        <p class="subtitle"><a href="https://getahead.ltd" target="_blank">Getahead Ltd.</a> &copy; 2024 by <a
+                href="https://lang.ansr.dev" target="_blank">Vsy</a>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const transcriptId = urlParams.get('transcript_id');
+
+            if (transcriptId) {
+                showAllLoadingSpinners();
+                fetch('/api/get_analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ transcript_id: transcriptId })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        if (data.analysis) {
+                            renderAnalysis(data.analysis);
+                        } else if (data.error) {
+                            document.getElementById('analysisContent').textContent = 'Error: ' + data.error;
+                        } else {
+                            document.getElementById('analysisContent').textContent = 'Unknown error occurred.';
+                        }
+                        hideAllLoadingSpinners();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching analysis:', error);
+                        document.getElementById('analysisContent').textContent = 'Error fetching analysis.';
+                        hideAllLoadingSpinners();
+                    });
+            } else {
+                document.getElementById('analysisContent').textContent = 'No transcript ID provided.';
+            }
+        });
+
+        function renderAnalysis(analysis) {
+            console.log('Rendering analysis:', analysis); // Log the analysis data
+
+            const analysisRegex = /"title":\s*"([^"]+)",\s*"details":\s*\[([^\]]+)\]/g;
+            let match;
+            while ((match = analysisRegex.exec(analysis)) !== null) {
+                const category = match[1];
+                const feedbackItems = match[2].split(/",\s*"/).map(item => item.replace(/^"|"$/g, '').replace(/\\"/g, '"'));
+
+                const targetElement = document.querySelector(`.content#content-${category.replace(/\s+/g, '-')}`);
+                if (targetElement) {
+                    feedbackItems.forEach(feedback => {
+                        const itemParagraph = document.createElement('p');
+                        itemParagraph.textContent = feedback;
+                        targetElement.appendChild(itemParagraph);
+                    });
+                    hideLoadingSpinner(targetElement);
+                }
+            }
+        }
+
+
+        function showAllLoadingSpinners() {
+            document.querySelectorAll('.loading-spinner').forEach(spinner => {
+                spinner.style.display = 'block';
+            });
+        }
+
+        function hideAllLoadingSpinners() {
+            document.querySelectorAll('.loading-spinner').forEach(spinner => {
+                spinner.style.display = 'none';
+            });
+        }
+
+        function hideLoadingSpinner(parentElement) {
+            parentElement.querySelector('.loading-spinner').style.display = 'none';
+        }
+
+    </script>
+</body>
+
+</html>

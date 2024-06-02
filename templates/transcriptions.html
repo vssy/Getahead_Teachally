@@ -2,17 +2,18 @@
 <html id="page">
 
 <head>
-    <title>Teachally - Enhance Your Teaching Skills with Personalised Feedback</title>
+    <title>Teachally - Transcription Display</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
+
     <link href="https://unpkg.com/cirrus-ui" type="text/css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,300,400,600,700" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" />
     <script src="https://kit.fontawesome.com/1359d7653f.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"
         integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-
 </head>
 
 <body>
@@ -32,11 +33,11 @@
             </div>
         </div>
     </div>
-    <section class="section">
+    <section class="section ">
         <div class="hero fullscreen">
             <div class="hero-body">
                 <div class="content">
-                    <ul class="breadcrumb breadcrumb--arrow breadcrumb--center">
+                    <ul class="breadcrumb breadcrumb--arrow breadcrumb--center mt-10">
                         <li class="breadcrumb__item">
                             <a href="#">Upload</a>
                         </li>
@@ -65,27 +66,21 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
-                    <div class="u-center"><button class="btn-info mt-5 btn--disabled" id="nextButton" disabled>Next
-                            Step</button></div>
+                    <div class="u-center"><button class="btn-info mt-5" id="nextButton">Next Step</button></div>
                 </div>
             </div>
         </div>
     </section>
-    <footer class="footer">
-        <h6 class="footer__title text-white uppercase">Teachally</h6>
+    <footer class="footer bg-gray-100">
+        <h6 class="footer__title uppercase">Teachally</h6>
         <div class="content">
             <div class="divider"></div>
         </div>
         <p class="subtitle"><a href="https://getahead.ltd" target="_blank">Getahead Ltd.</a> &copy; 2024 by <a
                 href="https://lang.ansr.dev" target="_blank">Vsy</a>
-    </footer><audio controls>
-        <source src="" type="audio/ogg">
-        <source src="" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
+    </footer>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -125,8 +120,51 @@
             });
         }
 
-    </script>
+        document.getElementById('nextButton').addEventListener('click', function (event) {
+            event.preventDefault();
+            this.classList.add('animated', 'loading', 'loading-right', 'btn--disabled');
 
+            const transcriptId = new URLSearchParams(window.location.search).get('transcript_id');
+            if (transcriptId) {
+                fetchAnalysis(transcriptId);
+            } else {
+                alert('No transcript ID provided.');
+                this.classList.remove('animated', 'loading', 'loading-right', 'btn--disabled');
+            }
+        });
+
+        function fetchAnalysis(transcriptId) {
+            fetch('/api/get_analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ transcript_id: transcriptId })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.analysis) {
+                        // Remove the loading animation
+                        document.getElementById('nextButton').classList.remove('animated', 'loading', 'loading-right', 'btn--disabled');
+                        // Navigate to the analysis page with the analysis data
+                        window.location.href = `/analysis?transcript_id=${transcriptId}&analysis=${encodeURIComponent(JSON.stringify(data.analysis))}`;
+                    } else {
+                        alert('Error: ' + data.error);
+                        document.getElementById('nextButton').classList.remove('animated', 'loading', 'loading-right', 'btn--disabled');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching analysis:', error);
+                    alert('Error fetching analysis.');
+                    document.getElementById('nextButton').classList.remove('animated', 'loading', 'loading-right', 'btn--disabled');
+                });
+        }
+    </script>
 </body>
 
 </html>

@@ -1,3 +1,4 @@
+import re
 import uuid
 from google.cloud import storage
 from werkzeug.utils import secure_filename
@@ -149,7 +150,7 @@ def generate(gcs_uri, mime_type):
     <p>Student: Great! Super busy! </p>
 
     """
-    text2 = """You are an interaction analysis AI. Based on the following transcript of a classroom session, identify and categorize the interactions between the teacher and students. Label each segment of the dialogue as 'Teacher' or 'Student'. Highlight key moments such as questions, answers, and any significant pauses or interruptions. Summarize the types of interactions and provide a count of each type. Transcribe and identify the speakers between the teacher and the student, keep grammar mistakes if any."""
+    # text2 = """You are an interaction analysis AI. Based on the following transcript of a classroom session, identify and categorize the interactions between the teacher and students. Label each segment of the dialogue as 'Teacher' or 'Student'. Highlight key moments such as questions, answers, and any significant pauses or interruptions. Summarize the types of interactions and provide a count of each type. Transcribe and identify the speakers between the teacher and the student, keep grammar mistakes if any."""
 
     generation_config = {
         "max_output_tokens": 8192,
@@ -182,6 +183,181 @@ def generate(gcs_uri, mime_type):
         f.write(transcript)
     logger.info(f'Transcription file saved: {transcript_filename}')
     return transcript_id
+
+
+@app.route('/analysis')
+def analysis():
+    transcript_id = request.args.get('transcript_id')
+    if not transcript_id:
+        return "No transcript ID provided.", 400
+    return render_template('analysis.html', transcript_id=transcript_id)
+
+
+@app.route('/api/get_analysis', methods=['POST'])
+def get_analysis():
+    data = request.get_json()
+    transcript_id = data.get('transcript_id')
+    if not transcript_id:
+        logger.error('No transcript ID provided')
+        return jsonify({'error': 'No transcript ID provided'}), 400
+
+    try:
+        transcript_filename = f'transcripts/{transcript_id}.txt'
+        logger.info(f'Checking for transcription file: {transcript_filename}')
+        if not os.path.exists(transcript_filename):
+            logger.error(
+                f'Transcription file not found: {transcript_filename}')
+            return jsonify({'error': 'Transcription file not found'}), 404
+
+        logger.info(f'Opening transcription file: {transcript_filename}')
+        with open(transcript_filename, 'r') as f:
+            transcript = f.read()
+            logger.debug(f'Transcript content: {transcript}')
+
+        # Send the transcript to the AI for analysis
+        analysis = perform_analysis(transcript)
+
+        return jsonify({'analysis': json.dumps(analysis)})
+    except Exception as e:
+        logger.error(f'Error performing analysis: {str(e)}')
+        return jsonify({'error': 'Error performing analysis'}), 500
+
+
+def perform_analysis(transcript):
+    vertexai.init(project="wordscape-399515", location="us-central1")
+    model = GenerativeModel(
+        "gemini-1.5-flash-001",
+        system_instruction=[
+            "You are an accurate analysis AI, designed to enhance teaching quality."]
+    )
+
+    analysis_prompt = f"""
+    You are an interaction analysis AI. Based on the following transcript of a classroom session, provide constructive feedback to the teacher in the following JSON format. Each criterion should have a title and an array of feedback items.
+
+    [
+        {{
+            "title": "Efficient Greetings",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Language Immersion",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Thinking Time",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Opportunities for Self-Correction",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Balance of Opinions",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Direct Error Correction",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Positive Reinforcement",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Constructive Corrections",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Enhancing Vocabulary",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }},
+        {{
+            "title": "Active Listening",
+            "details": [
+                "Provide detailed feedback here."
+            ]
+        }}
+    ]
+
+    Here is the transcript:
+    {transcript}
+    """
+
+    logger.debug(f'Analysis prompt: {analysis_prompt}')
+
+    generation_config = {
+        "max_output_tokens": 2048,
+        "temperature": 0.7,
+        "top_p": 0.9,
+    }
+
+    # Create a Part object with the analysis prompt
+    text_part = generative_models.Part.from_text(analysis_prompt)
+
+    logger.info('Generating analysis...')
+    response = model.generate_content(
+        [text_part],
+        generation_config=generation_config,
+    )
+
+    # Extract the generated text from the response
+    analysis_text = response.text
+    logger.debug(f'Generated analysis: {analysis_text}')
+
+    # Remove the ```json ... ``` wrapping if present
+    if analysis_text.startswith("```json") and analysis_text.endswith("```"):
+        analysis_text = analysis_text[7:-3].strip()
+
+    # Add a check to ensure the response is properly formatted JSON
+    if analysis_text.strip().startswith('[') and analysis_text.strip().endswith(']'):
+        try:
+            # Attempt to parse the JSON
+            analysis = json.loads(analysis_text)
+        except json.JSONDecodeError as e:
+            logger.error(f'JSONDecodeError: {str(e)}')
+            logger.error(f'Raw analysis text: {analysis_text}')
+            return {'error': 'Error decoding JSON', 'details': str(e), 'raw_text': analysis_text}
+    else:
+        logger.error('Generated text is not valid JSON')
+        logger.error(f'Raw analysis text: {analysis_text}')
+        return {'error': 'Generated text is not valid JSON', 'raw_text': analysis_text}
+
+    return analysis
+
+
+def parse_analysis(analysis_text):
+    analysis = []
+    sections = re.split(r'\n\n', analysis_text)
+
+    for section in sections:
+        if section.strip():
+            lines = section.strip().split('\n')
+            title = lines[0].strip()
+            details = '\n'.join(lines[1:]).strip()
+            analysis.append({
+                'title': title,
+                'details': details
+            })
+
+    return analysis
 
 
 if __name__ == '__main__':
