@@ -232,65 +232,75 @@ def perform_analysis(transcript):
     )
 
     analysis_prompt = f"""
-    You are an interaction analysis AI. Based on the following transcript of a classroom session, provide constructive feedback to the teacher in the following JSON format. Each criterion should have a title and an array of feedback items.
+    You are an interaction analysis AI. Based on the following transcript of a classroom session, provide constructive feedback to the teacher in the following JSON format. Each criterion should have a title, a score out of 10, and an array of feedback items.
 
     [
         {{
             "title": "Efficient Greetings",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Language Immersion",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Thinking Time",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Opportunities for Self-Correction",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Balance of Opinions",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Direct Error Correction",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Positive Reinforcement",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Constructive Corrections",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Enhancing Vocabulary",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
         }},
         {{
             "title": "Active Listening",
+            "score": 0,
             "details": [
                 "Provide detailed feedback here."
             ]
@@ -304,9 +314,9 @@ def perform_analysis(transcript):
     logger.debug(f'Analysis prompt: {analysis_prompt}')
 
     generation_config = {
-        "max_output_tokens": 2048,
-        "temperature": 0.7,
-        "top_p": 0.9,
+        "max_output_tokens": 8000,
+        "temperature": 1,
+        "top_p": 0.95,
     }
 
     # Create a Part object with the analysis prompt

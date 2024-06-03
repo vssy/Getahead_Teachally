@@ -60,7 +60,7 @@
                         <div class="animated loading hide-text"></div>
                     </div>
 
-                    <div id="analysisContent" class="u-text-left p-3">
+                    <div id="analysisContent" class="u-text-left text-xs">
                         <!-- Analysis cards will be inserted here -->
                         <div class="row">
                             <div class="col-6">
@@ -68,7 +68,7 @@
                                     <div class="card__header">
                                         <p class="font-bold px-3">Efficient Greetings</p>
                                     </div>
-                                    <div class="content p-3" id="content-Efficient-Greetings">
+                                    <div class="content p-3 text-xs" id="content-Efficient-Greetings">
                                         <div class="loading-spinner" style="display: none;">
                                             <div class="animated loading hide-text"></div>
                                         </div>
@@ -260,36 +260,13 @@
             const transcriptId = urlParams.get('transcript_id');
 
             if (transcriptId) {
-                showAllLoadingSpinners();
-                fetch('/api/get_analysis', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ transcript_id: transcriptId })
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Response data:', data);
-                        if (data.analysis) {
-                            renderAnalysis(data.analysis);
-                        } else if (data.error) {
-                            document.getElementById('analysisContent').textContent = 'Error: ' + data.error;
-                        } else {
-                            document.getElementById('analysisContent').textContent = 'Unknown error occurred.';
-                        }
-                        hideAllLoadingSpinners();
-                    })
-                    .catch(error => {
-                        console.error('Error fetching analysis:', error);
-                        document.getElementById('analysisContent').textContent = 'Error fetching analysis.';
-                        hideAllLoadingSpinners();
-                    });
+                // Fetch the analysis data from session storage
+                const analysis = sessionStorage.getItem('analysis');
+                if (analysis) {
+                    renderAnalysis(JSON.parse(analysis));
+                } else {
+                    document.getElementById('analysisContent').textContent = 'Error: No analysis data found.';
+                }
             } else {
                 document.getElementById('analysisContent').textContent = 'No transcript ID provided.';
             }
@@ -298,14 +275,20 @@
         function renderAnalysis(analysis) {
             console.log('Rendering analysis:', analysis); // Log the analysis data
 
-            const analysisRegex = /"title":\s*"([^"]+)",\s*"details":\s*\[([^\]]+)\]/g;
+            const analysisRegex = /"title":\s*"([^"]+)",\s*"score":\s*(\d+),\s*"details":\s*\[([^\]]+)\]/g;
             let match;
             while ((match = analysisRegex.exec(analysis)) !== null) {
                 const category = match[1];
-                const feedbackItems = match[2].split(/",\s*"/).map(item => item.replace(/^"|"$/g, '').replace(/\\"/g, '"'));
+                const score = match[2];
+                const feedbackItems = match[3].split(/",\s*"/).map(item => item.replace(/^"|"$/g, '').replace(/\\"/g, '"'));
 
                 const targetElement = document.querySelector(`.content#content-${category.replace(/\s+/g, '-')}`);
                 if (targetElement) {
+                    const scoreParagraph = document.createElement('p');
+                    scoreParagraph.classList.add('score');
+                    scoreParagraph.textContent = `Score: ${score}/10`;
+                    targetElement.appendChild(scoreParagraph);
+
                     feedbackItems.forEach(feedback => {
                         const itemParagraph = document.createElement('p');
                         itemParagraph.textContent = feedback;
@@ -315,6 +298,7 @@
                 }
             }
         }
+
 
 
         function showAllLoadingSpinners() {

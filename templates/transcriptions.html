@@ -149,10 +149,12 @@
                 })
                 .then(data => {
                     if (data.analysis) {
+                        // Store the analysis data in session storage
+                        sessionStorage.setItem('analysis', JSON.stringify(data.analysis));
                         // Remove the loading animation
                         document.getElementById('nextButton').classList.remove('animated', 'loading', 'loading-right', 'btn--disabled');
-                        // Navigate to the analysis page with the analysis data
-                        window.location.href = `/analysis?transcript_id=${transcriptId}&analysis=${encodeURIComponent(JSON.stringify(data.analysis))}`;
+                        // Navigate to the analysis page with only the transcript ID
+                        window.location.href = `/analysis?transcript_id=${transcriptId}`;
                     } else {
                         alert('Error: ' + data.error);
                         document.getElementById('nextButton').classList.remove('animated', 'loading', 'loading-right', 'btn--disabled');
@@ -164,6 +166,7 @@
                     document.getElementById('nextButton').classList.remove('animated', 'loading', 'loading-right', 'btn--disabled');
                 });
         }
+
     </script>
 </body>
 
